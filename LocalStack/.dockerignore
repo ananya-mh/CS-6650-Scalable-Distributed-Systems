@@ -1,0 +1,13 @@
+# Navigate to parent directory
+cd ..
+
+# Create .dockerignore file
+@"
+terraform/
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfvars
+.git/
+*.md
+"@ | Out-File -FilePath .dockerignore -Encoding UTF8
