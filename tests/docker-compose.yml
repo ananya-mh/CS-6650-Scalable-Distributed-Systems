@@ -1,0 +1,22 @@
+version: "3.9"
+
+services:
+  master:
+    image: locustio/locust
+    ports:
+      - "8089:8089"   # Locust Web UI
+    volumes:
+      - ./locustfile.py:/mnt/locust/locustfile.py
+    command: -f /mnt/locust/locustfile.py --master -H http://host.docker.internal:8080
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  worker:
+    image: locustio/locust
+    volumes:
+      - ./locustfile.py:/mnt/locust/locustfile.py
+    command: -f /mnt/locust/locustfile.py --worker --master-host master
+    depends_on:
+      - master
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

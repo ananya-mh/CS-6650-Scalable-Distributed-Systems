@@ -12,7 +12,7 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-east-1"
+  region = "us-west-2"
 }
 
 provider "docker" {
@@ -31,12 +31,12 @@ data "aws_region" "current" {}
 
 
 data "aws_iam_role" "ecs_task_execution_role" {
-  name = "AWSServiceRoleForECS" 
+  name = "MyRole" 
 }
 
 # For task role, often you can use the same role
 data "aws_iam_role" "ecs_task_role" {
-  name = "AWSServiceRoleForECS" 
+  name = "MyRole" 
 }
 
 ###################################################
@@ -56,7 +56,7 @@ resource "aws_vpc" "main" {
 resource "aws_subnet" "public_1" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.1.0/24"
-  availability_zone       = "us-east-1a"
+  availability_zone       = "us-west-2a"
   map_public_ip_on_launch = true
 
   tags = {
@@ -67,7 +67,7 @@ resource "aws_subnet" "public_1" {
 resource "aws_subnet" "public_2" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.2.0/24"
-  availability_zone       = "us-east-1b"
+  availability_zone       = "us-west-2b"
   map_public_ip_on_launch = true
 
   tags = {
@@ -199,7 +199,7 @@ resource "aws_ecs_task_definition" "app" {
       logDriver = "awslogs"
       options = {
         "awslogs-group"         = aws_cloudwatch_log_group.ecs.name
-        "awslogs-region"        = "us-east-1"
+        "awslogs-region"        = "us-west-2"
         "awslogs-stream-prefix" = "ecs"
       }
     }
@@ -285,50 +285,6 @@ resource "aws_lb_listener" "app" {
     target_group_arn = aws_lb_target_group.app.arn
   }
 }
-
-###################################################
-# API Gateway Integration (Optional)
-###################################################
-
-# resource "aws_apigatewayv2_api" "app" {
-#   name          = "product-search-http-api"
-#   protocol_type = "HTTP"
-# }
-
-# resource "aws_apigatewayv2_integration" "app" {
-#   api_id           = aws_apigatewayv2_api.app.id
-#   integration_type = "HTTP_PROXY"
-#   integration_uri  = "http://${aws_lb.main.dns_name}/{proxy}"
-  
-#   # ADD THIS - Required for HTTP_PROXY
-#   integration_method = "ANY"  # or "GET", "POST", etc.
-  
-#   # Optional but recommended
-#   connection_type    = "INTERNET"
-#   timeout_milliseconds = 30000
-# }
-
-# resource "aws_apigatewayv2_route" "health" {
-#   api_id    = aws_apigatewayv2_api.app.id
-#   route_key = "GET /health"
-#   target    = "integrations/${aws_apigatewayv2_integration.app.id}"
-# }
-
-# resource "aws_apigatewayv2_route" "search" {
-#   api_id    = aws_apigatewayv2_api.app.id
-#   route_key = "GET /products/search"
-#   target    = "integrations/${aws_apigatewayv2_integration.app.id}"
-# }
-
-# resource "aws_apigatewayv2_stage" "app" {
-#   api_id      = aws_apigatewayv2_api.app.id
-#   name        = "$default"
-#   auto_deploy = true
-# }
-
-###################################################
-# Security Groups
-###################################################
 
 resource "aws_security_group" "alb" {
   name        = "product-search-alb-sg"

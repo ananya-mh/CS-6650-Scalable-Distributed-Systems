@@ -12,7 +12,7 @@ RUN go mod download
 COPY *.go ./
 
 # Build the Go binary
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o search-api .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o product-search-api .
 
 # ---------- Stage 2: Run ----------
 FROM alpine:latest
@@ -24,10 +24,10 @@ RUN apk add --no-cache ca-certificates
 WORKDIR /app
 
 # Copy binary from builder
-COPY --from=build-stage /app/search-api .
+COPY --from=build-stage /app/product-search-api .
 
 # Expose port
 EXPOSE 8080
 
 # Run the application
-CMD ["./search-api"]
+CMD ["./product-search-api"]
